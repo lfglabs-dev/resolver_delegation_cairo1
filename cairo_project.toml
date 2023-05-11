@@ -1,0 +1,2 @@
+[crate_roots]
+resolver_delegation = "src"
