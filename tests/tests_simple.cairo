@@ -1,6 +1,7 @@
 use array::ArrayTrait;
 use debug::PrintTrait;
 use clone::Clone;
+use zeroable::Zeroable;
 
 use starknet::ContractAddress;
 use starknet::contract_address_const;
@@ -34,7 +35,7 @@ fn test_claim_name() {
 
     // Should resolve to 123 because we'll register it (with the encoded domain "thomas").
     let prev_owner = SimpleResolverDelegation::domain_to_address(name.clone());
-    assert(prev_owner == contract_address_const::<0>(), 'owner should be 0');
+    assert(prev_owner.is_zero(), 'owner should be 0');
 
     let success = SimpleResolverDelegation::claim_name(ENCODED_NAME);
     assert (success, 'claim should return true');
