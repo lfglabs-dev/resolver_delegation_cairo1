@@ -1,0 +1,1 @@
+# resolver_delegation_cairo1
