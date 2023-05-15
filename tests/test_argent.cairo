@@ -8,7 +8,7 @@ use starknet::ContractAddress;
 use starknet::contract_address_const;
 use starknet::testing::set_caller_address;
 
-use braavos::contracts::braavos::BraavosResolverDelegation;
+use argent::contracts::argent::ArgentResolverDelegation;
 
 use cheatcodes::RevertedTransactionTrait;
 
@@ -22,8 +22,8 @@ const WL_CLASS_HASH : felt252 = 11111;
 
 // todo: should deploy with proxy
 fn setup_and_init() -> felt252 {
-    // deploy braavos contract
-    let contract_address = deploy_contract('braavos', ArrayTrait::new()).unwrap();
+    // deploy argent contract
+    let contract_address = deploy_contract('argent', ArrayTrait::new()).unwrap();
 
     // initialize contract
     let mut calldata = ArrayTrait::new();
@@ -147,8 +147,8 @@ fn test_claim_two_names_should_fail() {
 #[test]
 #[available_gas(2000000)]
 fn test_open_registration() {
-    // deploy braavos contract
-    let contract_address = deploy_contract('braavos', ArrayTrait::new()).unwrap();
+    // deploy argent contract
+    let contract_address = deploy_contract('argent', ArrayTrait::new()).unwrap();
 
     // initialize contract
     let mut calldata = ArrayTrait::new();
@@ -171,12 +171,12 @@ fn test_open_registration() {
     stop_prank(123).unwrap();
 }
 
-// todo: uncomment when we can check if owner is a braavos contract in wallet
+// todo: uncomment when we can check if owner is an argent contract in wallet
 // #[test]
 // #[available_gas(2000000)]
 // fn test_implementation_class_hash_not_set() {
-//     // deploy braavos contract
-//     let contract_address = deploy_contract('braavos', ArrayTrait::new()).unwrap();
+//     // deploy argent contract
+//     let contract_address = deploy_contract('argent', ArrayTrait::new()).unwrap();
 
 //     // initialize contract
 //     let mut calldata = ArrayTrait::new();
@@ -197,7 +197,7 @@ fn test_open_registration() {
 //     stop_prank(123).unwrap();
 // }
 
-// todo: uncomment when we can check if owner is a braavos contract in wallet
+// todo: uncomment when we can check if owner is a argent contract in wallet
 // #[test]
 // #[available_gas(2000000)]
 // fn test_implementation_class_hash_not_whitelisted() {

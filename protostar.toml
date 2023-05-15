@@ -1,9 +1,10 @@
 [project]
 protostar-version = "0.10.0"
 lib-path = "lib"
-linked-libraries = ["simple", "braavos"]
+linked-libraries = ["simple", "braavos", "argent"]
 
 [contracts]
 simple = ["simple"]
 braavos = ["braavos"]
+argent = ["argent"]
 

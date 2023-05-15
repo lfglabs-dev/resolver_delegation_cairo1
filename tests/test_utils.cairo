@@ -8,6 +8,6 @@ use cheatcodes::RevertedTransactionTrait;
 //
 
 // #[test]
-// fn test_get_amount_of_chars() {
+// fn test_get_amount_of_chars_braavos() {
 //     assert(braavos::business_logic::utils::_get_amount_of_chars(u256 { low: 0, high: 0}) == 0, 'Should return 0');
 // }
