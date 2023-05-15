@@ -84,9 +84,51 @@ fn test_claim_name_existing_should_fail() {
 
     // Should fail because the name is already registered.
     start_prank(456, contract_address).unwrap();
+    // todo: copy trait is not implemented for arrays in alpha-6
     let mut calldata = ArrayTrait::new();
     calldata.append(ENCODED_NAME);
     let invoke_result = invoke(contract_address, 'claim_name', calldata);
-    assert(invoke_result.is_err(), 'Invoke should fail');
+    assert(invoke_result.is_err(), 'Claim name should fail');
+}
+
+#[test]
+#[available_gas(2000000)]
+fn test_claim_name_wrong_length_should_fail() {
+    let contract_address = deploy_contract('simple', ArrayTrait::new()).unwrap();
+
+    // Should fail because domain has a length greater than 1
+    assert_domain_to_address(contract_address, ENCODED_NAME, 0);
+
+    start_prank(123, contract_address).unwrap();
+
+    let mut calldata = ArrayTrait::new();
+    calldata.append(ENCODED_NAME);
+    calldata.append(ENCODED_NAME);
+    let invoke_result = invoke(contract_address, 'claim_name', calldata);
+    assert(invoke_result.is_err(), 'Claim name should fail');
+}
+
+#[test]
+#[available_gas(2000000)]
+fn test_transfer_name_not_owner_should_fail() {
+    let contract_address = deploy_contract('simple', ArrayTrait::new()).unwrap();
+
+    // Should resolve to 123 because we'll register it (with the encoded domain "thomas").
+    assert_domain_to_address(contract_address, ENCODED_NAME, 0);
+
+    start_prank(123, contract_address).unwrap();
+
+    let mut calldata = ArrayTrait::new();
+    calldata.append(ENCODED_NAME);
+    invoke(contract_address, 'claim_name', calldata).unwrap();
+    assert_domain_to_address(contract_address, ENCODED_NAME, 123);
+
+    // Transfer name should fail because the caller is not the owner.
+    start_prank(456, contract_address).unwrap();
+    let mut calldata = ArrayTrait::new();
+    calldata.append(ENCODED_NAME);
+    calldata.append(456);
+    let invoke_result = invoke(contract_address, 'transfer_name', calldata);
+    assert(invoke_result.is_err(), 'Transfer name should fail');
 }
 
