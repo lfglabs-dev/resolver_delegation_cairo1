@@ -34,8 +34,7 @@ fn assert_domain_to_address(contract_address: felt252, domain: felt252, expected
             assert(*prev_owner.at(0_u32) == expected, 'Owner should be expected')
         },
         Result::Err(x) => {
-            assert(x.first() == 'error', 'first datum doesnt match');
-            assert(*x.panic_data.at(1_u32) == 'data', 'second datum doesnt match');
+            assert(false, 'error for domain_to_address');
         }
     }
 }
@@ -65,11 +64,13 @@ fn test_claim_name() {
     calldata.append(456);
     invoke(contract_address, 'transfer_name', calldata).unwrap();
     assert_domain_to_address(contract_address, ENCODED_NAME, 456);
+
+    stop_prank(123).unwrap();
 }
 
 #[test]
 #[available_gas(2000000)]
-fn test_claim_name_existing_should_fail() {
+fn test_claim_taken_name_should_fail() {
     let contract_address = deploy_contract('simple', ArrayTrait::new()).unwrap();
 
     // Should resolve to 123 because we'll register it (with the encoded domain "thomas").
@@ -82,8 +83,10 @@ fn test_claim_name_existing_should_fail() {
     invoke(contract_address, 'claim_name', calldata).unwrap();
     assert_domain_to_address(contract_address, ENCODED_NAME, 123);
 
-    // Should fail because the name is already registered.
+    stop_prank(123).unwrap();
     start_prank(456, contract_address).unwrap();
+
+    // Should fail because the name is already registered.
     // todo: copy trait is not implemented for arrays in alpha-6
     let mut calldata = ArrayTrait::new();
     calldata.append(ENCODED_NAME);
@@ -106,6 +109,8 @@ fn test_claim_name_wrong_length_should_fail() {
     calldata.append(ENCODED_NAME);
     let invoke_result = invoke(contract_address, 'claim_name', calldata);
     assert(invoke_result.is_err(), 'Claim name should fail');
+
+    stop_prank(123).unwrap();
 }
 
 #[test]
@@ -123,12 +128,16 @@ fn test_transfer_name_not_owner_should_fail() {
     invoke(contract_address, 'claim_name', calldata).unwrap();
     assert_domain_to_address(contract_address, ENCODED_NAME, 123);
 
-    // Transfer name should fail because the caller is not the owner.
+    stop_prank(123).unwrap();
     start_prank(456, contract_address).unwrap();
+
+    // Transfer name should fail because the caller is not the owner.
     let mut calldata = ArrayTrait::new();
     calldata.append(ENCODED_NAME);
     calldata.append(456);
     let invoke_result = invoke(contract_address, 'transfer_name', calldata);
     assert(invoke_result.is_err(), 'Transfer name should fail');
+
+    stop_prank(456).unwrap();
 }
 
