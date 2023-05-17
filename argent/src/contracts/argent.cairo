@@ -3,10 +3,7 @@ mod ArgentResolverDelegation {
     use array::ArrayTrait;
     use debug::PrintTrait;
     use zeroable::Zeroable;
-
-    use integer::u256;
-    use integer::u256_from_felt252;
-    // use integer::{u256_as_non_zero, u256_safe_divmod};
+    use integer::{u256, u256_from_felt252};
 
     use starknet::get_caller_address;
     use starknet::contract_address_const;
@@ -14,6 +11,7 @@ mod ArgentResolverDelegation {
 
     use argent::business_logic::interfaces::IProxyWalletDispatcher;
     use argent::business_logic::interfaces::IProxyWalletDispatcherTrait;
+    use argent::business_logic::utils::_get_amount_of_chars;
 
     struct Storage {
         _name_owners: LegacyMap::<felt252, ContractAddress>,
@@ -40,8 +38,7 @@ mod ArgentResolverDelegation {
     #[external]
     fn initializer(admin: ContractAddress) {
         let current_admin = _admin_address::read();
-        // todo: replace w/ alpha-7: assert(current_admin.is_zero(), 'admin is already set');
-        assert(current_admin == contract_address_const::<0>(), 'admin is already set');
+        assert(current_admin.is_zero(), 'admin is already set');
         _admin_address::write(admin);
     }
 
@@ -98,12 +95,11 @@ mod ArgentResolverDelegation {
 
         // Check if name is not taken
         let owner = _name_owners::read(name);
-        // todo replace w/ : assert(owner.is_zero(), 'name is already taken');
-        assert(owner == contract_address_const::<0>(), 'name is already taken');
+        assert(owner.is_zero(), 'name is already taken');
 
-        // TODO: Check if name is more than 4 letters (requires alpha-7 for u256 div)
-        // let number_of_character = _get_amount_of_chars(u256_from_felt252(name));
-        // assert(u256_from_felt252(number_of_character) >= u256_from_felt252(4), 'name is less than 4 characters');
+        // Check if name is more than 4 letters (requires alpha-7 for u256 div)
+        let number_of_character = _get_amount_of_chars(u256_from_felt252(name));
+        assert(u256_from_felt252(number_of_character) >= u256_from_felt252(4), 'name is less than 4 characters');
 
         // Check if address is not blackisted
         let is_blacklisted = _blacklisted_addresses::read(caller);
@@ -114,8 +110,7 @@ mod ArgentResolverDelegation {
         _blacklisted_addresses::write(caller, true);
         let mut name_array = ArrayTrait::<felt252>::new();
         name_array.append(name);
-        // todo: emitting an event currently fails w/ protostar - should be fixed in next release
-        // domain_to_addr_update(name_array, caller);
+        domain_to_addr_update(name_array, caller);
         true
     }
 
@@ -133,8 +128,7 @@ mod ArgentResolverDelegation {
         _name_owners::write(name, new_owner);
         let mut name_array = ArrayTrait::<felt252>::new();
         name_array.append(name);
-        // todo: emitting an event currently fails w/ protostar - should be fixed in next release
-        // domain_to_addr_update(name_array, caller);
+        domain_to_addr_update(name_array, caller);
         true
     }
 
