@@ -1,8 +1,16 @@
 [package]
-name = "resolver_contract"
+name = "resolver_delegation"
 version = "0.1.0"
 
 [dependencies]
-simple = { path = "simple" }
-argent = { path = "argent" }
-braavos = { path = "braavos" }
+starknet = "2.1.0-rc2"
+
+[[target.starknet-contract]]
+# Enable Sierra codegen.
+sierra = true
+
+# Enable CASM codegen.
+casm = true
+
+# Emit Python-powered hints in order to run compiled CASM class with legacy Cairo VM.
+casm-add-pythonic-hints = true
