@@ -175,3 +175,4 @@ pyrightconfig.json
 target
 .DS_Store
 .env
+/deployments
