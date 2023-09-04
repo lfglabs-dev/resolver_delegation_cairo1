@@ -24,7 +24,6 @@ use super::utils;
 // Helpers
 //
 
-#[cfg(test)]
 fn setup() -> IBraavosResolverDelegationDispatcher {
     let mut calldata = ArrayTrait::<felt252>::new();
     calldata.append(OWNER().into());
@@ -32,13 +31,11 @@ fn setup() -> IBraavosResolverDelegationDispatcher {
     IBraavosResolverDelegationDispatcher { contract_address: address }
 }
 
-#[cfg(test)]
 fn deploy_proxy_wallet() -> IProxyWalletDispatcher {
     let address = utils::deploy(ProxyWallet::TEST_CLASS_HASH, ArrayTrait::<felt252>::new());
     IProxyWalletDispatcher { contract_address: address }
 }
 
-#[cfg(test)]
 fn assert_domain_to_address(
     braavos_resolver: IBraavosResolverDelegationDispatcher,
     domain: felt252,
@@ -54,7 +51,6 @@ fn assert_domain_to_address(
 // Tests
 //
 
-#[cfg(test)]
 #[test]
 #[available_gas(200000000)]
 fn test_claim_transfer_name() {
@@ -81,10 +77,9 @@ fn test_claim_transfer_name() {
     assert_domain_to_address(braavos_resolver, ENCODED_NAME(), other_account.contract_address);
 }
 
-#[cfg(test)]
 #[test]
 #[available_gas(200000000)]
-#[should_panic(expected: ('Name is less than 4 characters', 'ENTRYPOINT_FAILED', ))]
+#[should_panic(expected: ('Name is less than 4 characters', 'ENTRYPOINT_FAILED',))]
 fn test_claim_not_allowed_name() {
     let braavos_resolver = setup();
     let account = deploy_proxy_wallet();
@@ -102,10 +97,9 @@ fn test_claim_not_allowed_name() {
     braavos_resolver.claim_name(encoded_ben);
 }
 
-#[cfg(test)]
 #[test]
 #[available_gas(200000000)]
-#[should_panic(expected: ('Name is already taken', 'ENTRYPOINT_FAILED', ))]
+#[should_panic(expected: ('Name is already taken', 'ENTRYPOINT_FAILED',))]
 fn test_claim_taken_name_should_fail() {
     let braavos_resolver = setup();
     let account = deploy_proxy_wallet();
@@ -129,10 +123,9 @@ fn test_claim_taken_name_should_fail() {
     braavos_resolver.claim_name(ENCODED_NAME());
 }
 
-#[cfg(test)]
 #[test]
 #[available_gas(200000000)]
-#[should_panic(expected: ('Caller is blacklisted', 'ENTRYPOINT_FAILED', ))]
+#[should_panic(expected: ('Caller is blacklisted', 'ENTRYPOINT_FAILED',))]
 fn test_claim_two_names_should_fail() {
     let braavos_resolver = setup();
     let account = deploy_proxy_wallet();
@@ -154,10 +147,9 @@ fn test_claim_two_names_should_fail() {
     braavos_resolver.claim_name(OTHER_NAME());
 }
 
-#[cfg(test)]
 #[test]
 #[available_gas(200000000)]
-#[should_panic(expected: ('Registration is closed', 'ENTRYPOINT_FAILED', ))]
+#[should_panic(expected: ('Registration is closed', 'ENTRYPOINT_FAILED',))]
 fn test_open_registration() {
     let braavos_resolver = setup();
     let account = deploy_proxy_wallet();
@@ -173,10 +165,9 @@ fn test_open_registration() {
     braavos_resolver.claim_name(ENCODED_NAME());
 }
 
-#[cfg(test)]
 #[test]
 #[available_gas(200000000)]
-#[should_panic(expected: ('Caller is not a braavos wallet', 'ENTRYPOINT_FAILED', ))]
+#[should_panic(expected: ('Caller is not a braavos wallet', 'ENTRYPOINT_FAILED',))]
 fn test_implementation_class_hash_not_set() {
     let braavos_resolver = setup();
     let account = deploy_proxy_wallet();
@@ -192,10 +183,9 @@ fn test_implementation_class_hash_not_set() {
     braavos_resolver.claim_name(ENCODED_NAME());
 }
 
-#[cfg(test)]
 #[test]
 #[available_gas(200000000)]
-#[should_panic(expected: ('Caller is not a braavos wallet', 'ENTRYPOINT_FAILED', ))]
+#[should_panic(expected: ('Caller is not a braavos wallet', 'ENTRYPOINT_FAILED',))]
 fn test_implementation_class_hash_not_whitelisted() {
     let braavos_resolver = setup();
     let account = deploy_proxy_wallet();
@@ -212,7 +202,6 @@ fn test_implementation_class_hash_not_whitelisted() {
     braavos_resolver.claim_name(ENCODED_NAME());
 }
 
-#[cfg(test)]
 #[test]
 #[available_gas(200000000)]
 fn test_change_implementation_class_hash() {
@@ -228,10 +217,9 @@ fn test_change_implementation_class_hash() {
     braavos_resolver.upgrade(NEW_CLASS_HASH());
 }
 
-#[cfg(test)]
 #[test]
 #[available_gas(200000000)]
-#[should_panic(expected: ('caller is not admin', 'ENTRYPOINT_FAILED', ))]
+#[should_panic(expected: ('caller is not admin', 'ENTRYPOINT_FAILED',))]
 fn test_change_implementation_class_hash_not_admin() {
     let braavos_resolver = setup();
 
@@ -248,10 +236,9 @@ fn test_change_implementation_class_hash_not_admin() {
 }
 
 
-#[cfg(test)]
 #[test]
 #[available_gas(200000000)]
-#[should_panic(expected: ('Class hash cannot be zero', 'ENTRYPOINT_FAILED', ))]
+#[should_panic(expected: ('Class hash cannot be zero', 'ENTRYPOINT_FAILED',))]
 fn test_change_implementation_class_hash_0_failed() {
     let braavos_resolver = setup();
 

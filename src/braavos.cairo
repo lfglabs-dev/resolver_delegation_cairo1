@@ -5,12 +5,6 @@ trait IBraavosResolverDelegation<TContractState> {
     fn set_wl_class_hash(ref self: TContractState, new_class_hash: felt252);
     fn set_admin(ref self: TContractState, new_admin: starknet::ContractAddress);
     fn upgrade(ref self: TContractState, impl_hash: starknet::class_hash::ClassHash);
-    fn upgrade_and_call(
-        ref self: TContractState,
-        impl_hash: starknet::class_hash::ClassHash,
-        selector: felt252,
-        calldata: Array<felt252>
-    );
     fn claim_name(ref self: TContractState, name: felt252);
     fn claim_name_for(ref self: TContractState, name: felt252, address: starknet::ContractAddress);
     fn transfer_name(ref self: TContractState, name: felt252, new_owner: starknet::ContractAddress);
@@ -35,7 +29,6 @@ mod BraavosResolverDelegation {
 
     use resolver_delegation::interface::{IProxyWalletDispatcher, IProxyWalletDispatcherTrait};
     use resolver_delegation::utils::_get_amount_of_chars;
-    use resolver_delegation::upgrades::upgradeable::Upgradeable;
 
     #[storage]
     struct Storage {
@@ -53,12 +46,13 @@ mod BraavosResolverDelegation {
     #[event]
     #[derive(Drop, starknet::Event)]
     enum Event {
-        domain_to_addr_update: domain_to_addr_update, 
+        domain_to_addr_update: domain_to_addr_update,
     }
 
     #[derive(Drop, starknet::Event)]
     struct domain_to_addr_update {
-        domain: Array<felt252>,
+        #[key]
+        domain: Span<felt252>,
         address: ContractAddress,
     }
 
@@ -94,21 +88,9 @@ mod BraavosResolverDelegation {
 
         fn upgrade(ref self: ContractState, impl_hash: ClassHash) {
             self._check_admin();
-            let mut unsafe_state = Upgradeable::unsafe_new_contract_state();
-            Upgradeable::InternalImpl::_upgrade(ref unsafe_state, impl_hash);
-        }
-
-        fn upgrade_and_call(
-            ref self: ContractState,
-            impl_hash: ClassHash,
-            selector: felt252,
-            calldata: Array<felt252>
-        ) {
-            self._check_admin();
-            let mut unsafe_state = Upgradeable::unsafe_new_contract_state();
-            Upgradeable::InternalImpl::_upgrade_and_call(
-                ref unsafe_state, impl_hash, selector, calldata.span()
-            );
+            // todo: use components
+            assert(!impl_hash.is_zero(), 'Class hash cannot be zero');
+            starknet::replace_class_syscall(impl_hash).unwrap();
         }
 
         //
@@ -122,9 +104,8 @@ mod BraavosResolverDelegation {
 
             // Check if caller is a braavos wallet
             let caller = get_caller_address();
-            let caller_class_hash = IProxyWalletDispatcher {
-                contract_address: caller
-            }.get_implementation();
+            let caller_class_hash = IProxyWalletDispatcher { contract_address: caller }
+                .get_implementation();
             let is_class_hash_wl = self._is_class_hash_wl.read(caller_class_hash);
             assert(is_class_hash_wl, 'Caller is not a braavos wallet');
 
@@ -151,7 +132,7 @@ mod BraavosResolverDelegation {
             self
                 .emit(
                     Event::domain_to_addr_update(
-                        domain_to_addr_update { domain: name_array, address: caller,  }
+                        domain_to_addr_update { domain: name_array.span(), address: caller, }
                     )
                 )
         }
@@ -164,9 +145,8 @@ mod BraavosResolverDelegation {
             assert(is_open, 'Registration is closed');
 
             // Check if receiver is a braavos wallet
-            let caller_class_hash = IProxyWalletDispatcher {
-                contract_address: address
-            }.get_implementation();
+            let caller_class_hash = IProxyWalletDispatcher { contract_address: address }
+                .get_implementation();
             let is_class_hash_wl = self._is_class_hash_wl.read(caller_class_hash);
             assert(is_class_hash_wl, 'Receiver not a braavos wallet');
 
@@ -193,7 +173,7 @@ mod BraavosResolverDelegation {
             self
                 .emit(
                     Event::domain_to_addr_update(
-                        domain_to_addr_update { domain: name_array, address,  }
+                        domain_to_addr_update { domain: name_array.span(), address, }
                     )
                 )
         }
@@ -204,9 +184,8 @@ mod BraavosResolverDelegation {
             assert(owner == caller, 'caller is not owner');
 
             // Check if new owner is a braavos wallet
-            let caller_class_hash = IProxyWalletDispatcher {
-                contract_address: new_owner
-            }.get_implementation();
+            let caller_class_hash = IProxyWalletDispatcher { contract_address: new_owner }
+                .get_implementation();
             let is_class_hash_wl = self._is_class_hash_wl.read(caller_class_hash);
             assert(is_class_hash_wl, 'new_owner not a braavos wallet');
 
@@ -220,7 +199,7 @@ mod BraavosResolverDelegation {
             self
                 .emit(
                     Event::domain_to_addr_update(
-                        domain_to_addr_update { domain: name_array, address: new_owner,  }
+                        domain_to_addr_update { domain: name_array.span(), address: new_owner, }
                     )
                 )
         }

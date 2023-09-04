@@ -18,7 +18,7 @@ mod SimpleResolverDelegation {
 
     #[storage]
     struct Storage {
-        name_owners: LegacyMap::<felt252, ContractAddress>, 
+        name_owners: LegacyMap::<felt252, ContractAddress>,
     }
 
     #[external(v0)]

@@ -1,7 +1,6 @@
 use starknet::testing;
 use resolver_delegation::utils::_get_amount_of_chars;
 
-#[cfg(test)]
 #[test]
 #[available_gas(20000000000)]
 fn test_get_amount_of_chars() {

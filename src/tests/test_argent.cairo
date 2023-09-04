@@ -24,7 +24,6 @@ use super::utils;
 // Helpers
 //
 
-#[cfg(test)]
 fn setup() -> IArgentResolverDelegationDispatcher {
     let mut calldata = ArrayTrait::<felt252>::new();
     calldata.append(OWNER().into());
@@ -32,13 +31,11 @@ fn setup() -> IArgentResolverDelegationDispatcher {
     IArgentResolverDelegationDispatcher { contract_address: address }
 }
 
-#[cfg(test)]
 fn deploy_proxy_wallet() -> IProxyWalletDispatcher {
     let address = utils::deploy(ProxyWallet::TEST_CLASS_HASH, ArrayTrait::<felt252>::new());
     IProxyWalletDispatcher { contract_address: address }
 }
 
-#[cfg(test)]
 fn assert_domain_to_address(
     argent_resolver: IArgentResolverDelegationDispatcher, domain: felt252, expected: ContractAddress
 ) {
@@ -52,7 +49,6 @@ fn assert_domain_to_address(
 // Tests
 //
 
-#[cfg(test)]
 #[test]
 #[available_gas(200000000)]
 fn test_claim_transfer_name() {
@@ -79,10 +75,9 @@ fn test_claim_transfer_name() {
     assert_domain_to_address(argent_resolver, ENCODED_NAME(), other_account.contract_address);
 }
 
-#[cfg(test)]
 #[test]
 #[available_gas(200000000)]
-#[should_panic(expected: ('Name is less than 4 characters', 'ENTRYPOINT_FAILED', ))]
+#[should_panic(expected: ('Name is less than 4 characters', 'ENTRYPOINT_FAILED',))]
 fn test_claim_not_allowed_name() {
     let argent_resolver = setup();
     let account = deploy_proxy_wallet();
@@ -100,10 +95,9 @@ fn test_claim_not_allowed_name() {
     argent_resolver.claim_name(encoded_ben);
 }
 
-#[cfg(test)]
 #[test]
 #[available_gas(200000000)]
-#[should_panic(expected: ('Name is already taken', 'ENTRYPOINT_FAILED', ))]
+#[should_panic(expected: ('Name is already taken', 'ENTRYPOINT_FAILED',))]
 fn test_claim_taken_name_should_fail() {
     let argent_resolver = setup();
     let account = deploy_proxy_wallet();
@@ -127,10 +121,9 @@ fn test_claim_taken_name_should_fail() {
     argent_resolver.claim_name(ENCODED_NAME());
 }
 
-#[cfg(test)]
 #[test]
 #[available_gas(200000000)]
-#[should_panic(expected: ('Caller is blacklisted', 'ENTRYPOINT_FAILED', ))]
+#[should_panic(expected: ('Caller is blacklisted', 'ENTRYPOINT_FAILED',))]
 fn test_claim_two_names_should_fail() {
     let argent_resolver = setup();
     let account = deploy_proxy_wallet();
@@ -152,10 +145,9 @@ fn test_claim_two_names_should_fail() {
     argent_resolver.claim_name(OTHER_NAME());
 }
 
-#[cfg(test)]
 #[test]
 #[available_gas(200000000)]
-#[should_panic(expected: ('Registration is closed', 'ENTRYPOINT_FAILED', ))]
+#[should_panic(expected: ('Registration is closed', 'ENTRYPOINT_FAILED',))]
 fn test_open_registration() {
     let argent_resolver = setup();
     let account = deploy_proxy_wallet();
@@ -171,10 +163,9 @@ fn test_open_registration() {
     argent_resolver.claim_name(ENCODED_NAME());
 }
 
-#[cfg(test)]
 #[test]
 #[available_gas(200000000)]
-#[should_panic(expected: ('Owner is not an argent wallet', 'ENTRYPOINT_FAILED', ))]
+#[should_panic(expected: ('Owner is not an argent wallet', 'ENTRYPOINT_FAILED',))]
 fn test_implementation_class_hash_not_set() {
     let argent_resolver = setup();
     let account = deploy_proxy_wallet();
@@ -190,10 +181,9 @@ fn test_implementation_class_hash_not_set() {
     argent_resolver.claim_name(ENCODED_NAME());
 }
 
-#[cfg(test)]
 #[test]
 #[available_gas(200000000)]
-#[should_panic(expected: ('Owner is not an argent wallet', 'ENTRYPOINT_FAILED', ))]
+#[should_panic(expected: ('Owner is not an argent wallet', 'ENTRYPOINT_FAILED',))]
 fn test_implementation_class_hash_not_whitelisted() {
     let argent_resolver = setup();
     let account = deploy_proxy_wallet();
@@ -210,7 +200,6 @@ fn test_implementation_class_hash_not_whitelisted() {
     argent_resolver.claim_name(ENCODED_NAME());
 }
 
-#[cfg(test)]
 #[test]
 #[available_gas(200000000)]
 fn test_change_implementation_class_hash() {
@@ -226,10 +215,9 @@ fn test_change_implementation_class_hash() {
     argent_resolver.upgrade(NEW_CLASS_HASH());
 }
 
-#[cfg(test)]
 #[test]
 #[available_gas(200000000)]
-#[should_panic(expected: ('caller is not admin', 'ENTRYPOINT_FAILED', ))]
+#[should_panic(expected: ('caller is not admin', 'ENTRYPOINT_FAILED',))]
 fn test_change_implementation_class_hash_not_admin() {
     let argent_resolver = setup();
 
@@ -246,10 +234,9 @@ fn test_change_implementation_class_hash_not_admin() {
 }
 
 
-#[cfg(test)]
 #[test]
 #[available_gas(200000000)]
-#[should_panic(expected: ('Class hash cannot be zero', 'ENTRYPOINT_FAILED', ))]
+#[should_panic(expected: ('Class hash cannot be zero', 'ENTRYPOINT_FAILED',))]
 fn test_change_implementation_class_hash_0_failed() {
     let argent_resolver = setup();
 

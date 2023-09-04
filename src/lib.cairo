@@ -3,6 +3,5 @@ mod braavos;
 mod argent;
 mod utils;
 mod interface;
-mod upgrades;
-
+#[cfg(test)]
 mod tests;

@@ -5,12 +5,6 @@ trait IArgentResolverDelegation<TContractState> {
     fn set_wl_class_hash(ref self: TContractState, new_class_hash: felt252);
     fn set_admin(ref self: TContractState, new_admin: starknet::ContractAddress);
     fn upgrade(ref self: TContractState, impl_hash: starknet::class_hash::ClassHash);
-    fn upgrade_and_call(
-        ref self: TContractState,
-        impl_hash: starknet::class_hash::ClassHash,
-        selector: felt252,
-        calldata: Array<felt252>
-    );
     fn claim_name(ref self: TContractState, name: felt252);
     fn transfer_name(ref self: TContractState, name: felt252, new_owner: starknet::ContractAddress);
     fn domain_to_address(
@@ -34,7 +28,6 @@ mod ArgentResolverDelegation {
 
     use resolver_delegation::interface::{IProxyWalletDispatcher, IProxyWalletDispatcherTrait};
     use resolver_delegation::utils::_get_amount_of_chars;
-    use resolver_delegation::upgrades::upgradeable::Upgradeable;
 
     #[storage]
     struct Storage {
@@ -52,12 +45,13 @@ mod ArgentResolverDelegation {
     #[event]
     #[derive(Drop, starknet::Event)]
     enum Event {
-        domain_to_addr_update: domain_to_addr_update, 
+        domain_to_addr_update: domain_to_addr_update,
     }
 
     #[derive(Drop, starknet::Event)]
     struct domain_to_addr_update {
-        domain: Array<felt252>,
+        #[key]
+        domain: Span<felt252>,
         address: ContractAddress,
     }
 
@@ -93,21 +87,9 @@ mod ArgentResolverDelegation {
 
         fn upgrade(ref self: ContractState, impl_hash: ClassHash) {
             self._check_admin();
-            let mut unsafe_state = Upgradeable::unsafe_new_contract_state();
-            Upgradeable::InternalImpl::_upgrade(ref unsafe_state, impl_hash);
-        }
-
-        fn upgrade_and_call(
-            ref self: ContractState,
-            impl_hash: ClassHash,
-            selector: felt252,
-            calldata: Array<felt252>
-        ) {
-            self._check_admin();
-            let mut unsafe_state = Upgradeable::unsafe_new_contract_state();
-            Upgradeable::InternalImpl::_upgrade_and_call(
-                ref unsafe_state, impl_hash, selector, calldata.span()
-            );
+            // todo: use components
+            assert(!impl_hash.is_zero(), 'Class hash cannot be zero');
+            starknet::replace_class_syscall(impl_hash).unwrap();
         }
 
         //
@@ -146,7 +128,7 @@ mod ArgentResolverDelegation {
             self
                 .emit(
                     Event::domain_to_addr_update(
-                        domain_to_addr_update { domain: name_array, address: caller,  }
+                        domain_to_addr_update { domain: name_array.span(), address: caller, }
                     )
                 )
         }
@@ -169,7 +151,7 @@ mod ArgentResolverDelegation {
             self
                 .emit(
                     Event::domain_to_addr_update(
-                        domain_to_addr_update { domain: name_array, address: new_owner,  }
+                        domain_to_addr_update { domain: name_array.span(), address: new_owner, }
                     )
                 )
         }
@@ -207,9 +189,8 @@ mod ArgentResolverDelegation {
         }
 
         fn _check_argent_account(self: @ContractState, owner: ContractAddress) {
-            let caller_class_hash = IProxyWalletDispatcher {
-                contract_address: owner
-            }.get_implementation();
+            let caller_class_hash = IProxyWalletDispatcher { contract_address: owner }
+                .get_implementation();
             let is_class_hash_wl = self._is_class_hash_wl.read(caller_class_hash);
             assert(is_class_hash_wl, 'Owner is not an argent wallet');
         }

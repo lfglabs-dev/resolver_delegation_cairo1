@@ -17,7 +17,6 @@ use super::utils;
 // Helpers
 //
 
-#[cfg(test)]
 fn setup() -> ISimpleResolverDelegationDispatcher {
     let address = utils::deploy(
         SimpleResolverDelegation::TEST_CLASS_HASH, ArrayTrait::<felt252>::new()
@@ -25,7 +24,6 @@ fn setup() -> ISimpleResolverDelegationDispatcher {
     ISimpleResolverDelegationDispatcher { contract_address: address }
 }
 
-#[cfg(test)]
 fn assert_domain_to_address(
     simple_resolver: ISimpleResolverDelegationDispatcher, domain: felt252, expected: ContractAddress
 ) {
@@ -39,7 +37,6 @@ fn assert_domain_to_address(
 // Tests
 //
 
-#[cfg(test)]
 #[test]
 #[available_gas(2000000)]
 fn test_claim_transfer_name() {
@@ -57,10 +54,9 @@ fn test_claim_transfer_name() {
     assert_domain_to_address(simple_resolver, ENCODED_NAME(), OTHER());
 }
 
-#[cfg(test)]
 #[test]
 #[available_gas(2000000)]
-#[should_panic(expected: ('Name is already taken', 'ENTRYPOINT_FAILED', ))]
+#[should_panic(expected: ('Name is already taken', 'ENTRYPOINT_FAILED',))]
 fn test_claim_taken_name_should_fail() {
     let simple_resolver = setup();
     testing::set_caller_address(USER());
@@ -77,10 +73,9 @@ fn test_claim_taken_name_should_fail() {
     simple_resolver.claim_name(ENCODED_NAME());
 }
 
-#[cfg(test)]
 #[test]
 #[available_gas(2000000)]
-#[should_panic(expected: ('Caller is not owner', 'ENTRYPOINT_FAILED', ))]
+#[should_panic(expected: ('Caller is not owner', 'ENTRYPOINT_FAILED',))]
 fn test_transfer_name_not_owner_should_fail() {
     let simple_resolver = setup();
     testing::set_caller_address(USER());
