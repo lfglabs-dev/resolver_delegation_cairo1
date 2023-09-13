@@ -1,6 +1,6 @@
 use integer::{u256, u256_from_felt252, u256_as_non_zero, u256_safe_divmod};
 
-fn _get_amount_of_chars(domain: u256) -> felt252 {
+fn _get_amount_of_chars(domain: u256) -> usize {
     if domain == (u256 { low: 0, high: 0 }) {
         return 0;
     }

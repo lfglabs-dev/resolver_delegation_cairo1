@@ -7,19 +7,15 @@ trait IArgentResolverDelegation<TContractState> {
     fn upgrade(ref self: TContractState, impl_hash: starknet::class_hash::ClassHash);
     fn claim_name(ref self: TContractState, name: felt252);
     fn transfer_name(ref self: TContractState, name: felt252, new_owner: starknet::ContractAddress);
-    fn domain_to_address(
-        self: @TContractState, domain: array::Array::<felt252>
-    ) -> starknet::ContractAddress;
+    fn domain_to_address(self: @TContractState, domain: Span<felt252>) -> starknet::ContractAddress;
     fn is_registration_open(self: @TContractState) -> bool;
     fn is_class_hash_wl(self: @TContractState, class_hash: felt252) -> bool;
 }
 
 #[starknet::contract]
 mod ArgentResolverDelegation {
-    use array::ArrayTrait;
-    use debug::PrintTrait;
+    use array::SpanTrait;
     use zeroable::Zeroable;
-    use integer::{u256, u128_from_felt252, u256_from_felt252};
     use starknet::class_hash::ClassHash;
 
     use starknet::get_caller_address;
@@ -45,11 +41,11 @@ mod ArgentResolverDelegation {
     #[event]
     #[derive(Drop, starknet::Event)]
     enum Event {
-        domain_to_addr_update: domain_to_addr_update,
+        DomainToAddressUpdate: DomainToAddressUpdate,
     }
 
     #[derive(Drop, starknet::Event)]
-    struct domain_to_addr_update {
+    struct DomainToAddressUpdate {
         #[key]
         domain: Span<felt252>,
         address: ContractAddress,
@@ -98,8 +94,7 @@ mod ArgentResolverDelegation {
 
         fn claim_name(ref self: ContractState, name: felt252) {
             // Check if registration is open
-            let is_open = self._is_registration_open.read();
-            assert(is_open, 'Registration is closed');
+            assert(self._is_registration_open.read(), 'Registration is closed');
 
             // Check if caller is an Argent wallet
             let caller = get_caller_address();
@@ -110,10 +105,8 @@ mod ArgentResolverDelegation {
             assert(owner.is_zero(), 'Name is already taken');
 
             // Check if name is more than 4 letters (requires alpha-7 for u256 div)
-            let number_of_character: felt252 = _get_amount_of_chars(u256_from_felt252(name));
-            assert(
-                u128_from_felt252(number_of_character) >= 4_u128, 'Name is less than 4 characters'
-            );
+            let number_of_chars = _get_amount_of_chars(name.into());
+            assert(number_of_chars >= 4, 'Name is less than 4 characters');
 
             // Check if address is not blackisted
             let is_blacklisted = self._blacklisted_addresses.read(caller);
@@ -123,12 +116,10 @@ mod ArgentResolverDelegation {
             self._name_owners.write(name, caller);
             self._blacklisted_addresses.write(caller, true);
 
-            let mut name_array = ArrayTrait::<felt252>::new();
-            name_array.append(name);
             self
                 .emit(
-                    Event::domain_to_addr_update(
-                        domain_to_addr_update { domain: name_array.span(), address: caller, }
+                    Event::DomainToAddressUpdate(
+                        DomainToAddressUpdate { domain: array![name].span(), address: caller, }
                     )
                 )
         }
@@ -144,14 +135,10 @@ mod ArgentResolverDelegation {
             // Change address in storage
             self._name_owners.write(name, new_owner);
 
-            let mut name_array = ArrayTrait::<felt252>::new();
-            name_array.append(name);
-            let mut name_array = ArrayTrait::<felt252>::new();
-            name_array.append(name);
             self
                 .emit(
-                    Event::domain_to_addr_update(
-                        domain_to_addr_update { domain: name_array.span(), address: new_owner, }
+                    Event::DomainToAddressUpdate(
+                        DomainToAddressUpdate { domain: array![name].span(), address: new_owner, }
                     )
                 )
         }
@@ -160,11 +147,9 @@ mod ArgentResolverDelegation {
         // View functions
         // 
 
-        fn domain_to_address(
-            self: @ContractState, domain: array::Array::<felt252>
-        ) -> ContractAddress {
-            assert(domain.len() == 1_u32, 'domain must have a length of 1');
-            self._name_owners.read(*domain.at(0_u32))
+        fn domain_to_address(self: @ContractState, domain: Span<felt252>) -> ContractAddress {
+            assert(domain.len() == 1, 'domain must have a length of 1');
+            self._name_owners.read(*domain.at(0))
         }
 
         fn is_registration_open(self: @ContractState) -> bool {

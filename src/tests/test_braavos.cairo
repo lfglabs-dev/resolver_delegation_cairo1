@@ -1,4 +1,4 @@
-use array::ArrayTrait;
+use array::{ArrayTrait, SpanTrait};
 use debug::PrintTrait;
 use zeroable::Zeroable;
 use traits::Into;
@@ -25,9 +25,7 @@ use super::utils;
 //
 
 fn setup() -> IBraavosResolverDelegationDispatcher {
-    let mut calldata = ArrayTrait::<felt252>::new();
-    calldata.append(OWNER().into());
-    let address = utils::deploy(BraavosResolverDelegation::TEST_CLASS_HASH, calldata);
+    let address = utils::deploy(BraavosResolverDelegation::TEST_CLASS_HASH, array![OWNER().into()]);
     IBraavosResolverDelegationDispatcher { contract_address: address }
 }
 
@@ -41,9 +39,7 @@ fn assert_domain_to_address(
     domain: felt252,
     expected: ContractAddress
 ) {
-    let mut calldata = ArrayTrait::<felt252>::new();
-    calldata.append(domain);
-    let owner = braavos_resolver.domain_to_address(calldata);
+    let owner = braavos_resolver.domain_to_address(array![domain].span());
     assert(owner == expected, 'Owner should be expected');
 }
 
@@ -59,7 +55,6 @@ fn test_claim_transfer_name() {
     let other_account = deploy_proxy_wallet();
 
     // Open registration & set class hash whitelisted
-    testing::set_caller_address(OWNER());
     testing::set_contract_address(OWNER());
     braavos_resolver.open_registration();
     braavos_resolver.set_wl_class_hash(WL_CLASS_HASH());
@@ -85,13 +80,11 @@ fn test_claim_not_allowed_name() {
     let account = deploy_proxy_wallet();
 
     // Open registration & set class hash whitelisted
-    testing::set_caller_address(OWNER());
     testing::set_contract_address(OWNER());
     braavos_resolver.open_registration();
     braavos_resolver.set_wl_class_hash(WL_CLASS_HASH());
 
     // Should revert because of names are less than 4 chars (with the encoded domain "ben").
-    testing::set_caller_address(account.contract_address);
     testing::set_contract_address(account.contract_address);
     let encoded_ben = 18925;
     braavos_resolver.claim_name(encoded_ben);
@@ -106,19 +99,16 @@ fn test_claim_taken_name_should_fail() {
     let other_account = deploy_proxy_wallet();
 
     // Open registration & set class hash whitelisted
-    testing::set_caller_address(OWNER());
     testing::set_contract_address(OWNER());
     braavos_resolver.open_registration();
     braavos_resolver.set_wl_class_hash(WL_CLASS_HASH());
 
     // Should resolve to 123 because we'll register it (with the encoded domain "thomas").
-    testing::set_caller_address(account.contract_address);
     testing::set_contract_address(account.contract_address);
     braavos_resolver.claim_name(ENCODED_NAME());
     assert_domain_to_address(braavos_resolver, ENCODED_NAME(), account.contract_address);
 
     // Should revert because the name is taken (with the encoded domain "thomas").
-    testing::set_caller_address(other_account.contract_address);
     testing::set_contract_address(other_account.contract_address);
     braavos_resolver.claim_name(ENCODED_NAME());
 }
@@ -132,13 +122,11 @@ fn test_claim_two_names_should_fail() {
     let other_account = deploy_proxy_wallet();
 
     // Open registration & set class hash whitelisted
-    testing::set_caller_address(OWNER());
     testing::set_contract_address(OWNER());
     braavos_resolver.open_registration();
     braavos_resolver.set_wl_class_hash(WL_CLASS_HASH());
 
     // Should resolve to 123 because we'll register it (with the encoded domain "thomas").
-    testing::set_caller_address(account.contract_address);
     testing::set_contract_address(account.contract_address);
     braavos_resolver.claim_name(ENCODED_NAME());
     assert_domain_to_address(braavos_resolver, ENCODED_NAME(), account.contract_address);
@@ -155,12 +143,10 @@ fn test_open_registration() {
     let account = deploy_proxy_wallet();
 
     // Open registration & set class hash whitelisted
-    testing::set_caller_address(OWNER());
     testing::set_contract_address(OWNER());
     braavos_resolver.set_wl_class_hash(WL_CLASS_HASH());
 
     // Should revert because the registration is closed (with the encoded domain "thomas").
-    testing::set_caller_address(account.contract_address);
     testing::set_contract_address(account.contract_address);
     braavos_resolver.claim_name(ENCODED_NAME());
 }
@@ -173,12 +159,10 @@ fn test_implementation_class_hash_not_set() {
     let account = deploy_proxy_wallet();
 
     // Open registration & set class hash whitelisted
-    testing::set_caller_address(OWNER());
     testing::set_contract_address(OWNER());
     braavos_resolver.open_registration();
 
     // Should revert because the implementation class hash is not set
-    testing::set_caller_address(account.contract_address);
     testing::set_contract_address(account.contract_address);
     braavos_resolver.claim_name(ENCODED_NAME());
 }
@@ -191,13 +175,11 @@ fn test_implementation_class_hash_not_whitelisted() {
     let account = deploy_proxy_wallet();
 
     // Open registration & set class hash whitelisted
-    testing::set_caller_address(OWNER());
     testing::set_contract_address(OWNER());
     braavos_resolver.open_registration();
     braavos_resolver.set_wl_class_hash(OTHER_WL_CLASS_HASH());
 
     // Should revert because the implementation class hash is not set
-    testing::set_caller_address(account.contract_address);
     testing::set_contract_address(account.contract_address);
     braavos_resolver.claim_name(ENCODED_NAME());
 }
@@ -208,7 +190,6 @@ fn test_change_implementation_class_hash() {
     let braavos_resolver = setup();
 
     // Open registration & set class hash whitelisted
-    testing::set_caller_address(OWNER());
     testing::set_contract_address(OWNER());
     braavos_resolver.open_registration();
     braavos_resolver.set_wl_class_hash(OTHER_WL_CLASS_HASH());
@@ -224,13 +205,11 @@ fn test_change_implementation_class_hash_not_admin() {
     let braavos_resolver = setup();
 
     // Open registration & set class hash whitelisted
-    testing::set_caller_address(OWNER());
     testing::set_contract_address(OWNER());
     braavos_resolver.open_registration();
     braavos_resolver.set_wl_class_hash(OTHER_WL_CLASS_HASH());
 
     // Should revert because the caller is not admin of the contract
-    testing::set_caller_address(USER());
     testing::set_contract_address(USER());
     braavos_resolver.upgrade(NEW_CLASS_HASH());
 }
@@ -243,7 +222,6 @@ fn test_change_implementation_class_hash_0_failed() {
     let braavos_resolver = setup();
 
     // Open registration & set class hash whitelisted
-    testing::set_caller_address(OWNER());
     testing::set_contract_address(OWNER());
     braavos_resolver.open_registration();
     braavos_resolver.set_wl_class_hash(OTHER_WL_CLASS_HASH());

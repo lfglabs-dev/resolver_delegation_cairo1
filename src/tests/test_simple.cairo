@@ -27,9 +27,7 @@ fn setup() -> ISimpleResolverDelegationDispatcher {
 fn assert_domain_to_address(
     simple_resolver: ISimpleResolverDelegationDispatcher, domain: felt252, expected: ContractAddress
 ) {
-    let mut calldata = ArrayTrait::<felt252>::new();
-    calldata.append(domain);
-    let owner = simple_resolver.domain_to_address(calldata);
+    let owner = simple_resolver.domain_to_address(array![domain].span());
     assert(owner == expected, 'Owner should be expected');
 }
 
