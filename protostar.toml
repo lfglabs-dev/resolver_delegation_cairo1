@@ -1,9 +1,0 @@
-[project]
-protostar-version = "0.13.0"
-lib-path = "lib"
-linked-libraries = ["simple", "braavos", "argent"]
-
-[contracts]
-simple = ["simple/src"]
-braavos = ["braavos/src"]
-argent = ["argent/src"]
