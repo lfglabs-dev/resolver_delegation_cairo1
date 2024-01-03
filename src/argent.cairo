@@ -7,7 +7,6 @@ trait IArgentResolverDelegation<TContractState> {
     fn upgrade(ref self: TContractState, impl_hash: starknet::class_hash::ClassHash);
     fn claim_name(ref self: TContractState, name: felt252);
     fn transfer_name(ref self: TContractState, name: felt252, new_owner: starknet::ContractAddress);
-    fn domain_to_address(self: @TContractState, domain: Span<felt252>) -> starknet::ContractAddress;
     fn is_registration_open(self: @TContractState) -> bool;
     fn is_class_hash_wl(self: @TContractState, class_hash: felt252) -> bool;
 }
@@ -24,6 +23,7 @@ mod ArgentResolverDelegation {
 
     use resolver_delegation::interface::{IProxyWalletDispatcher, IProxyWalletDispatcherTrait};
     use resolver_delegation::utils::_get_amount_of_chars;
+    use naming::interface::resolver::IResolver;
 
     #[storage]
     struct Storage {
@@ -54,6 +54,17 @@ mod ArgentResolverDelegation {
     #[constructor]
     fn constructor(ref self: ContractState, admin: ContractAddress) {
         self._admin_address.write(admin);
+    }
+
+    #[external(v0)]
+    impl AdditionResolveImpl of IResolver<ContractState> {
+        fn resolve(
+            self: @ContractState, mut domain: Span<felt252>, field: felt252, hint: Span<felt252>
+        ) -> felt252 {
+            assert(domain.len() == 1, 'Domain must have a length of 1');
+            assert(field == 'starknet', 'Not supported');
+            self._name_owners.read(*domain.at(0)).into()
+        }
     }
 
     #[external(v0)]
@@ -146,11 +157,6 @@ mod ArgentResolverDelegation {
         //
         // View functions
         // 
-
-        fn domain_to_address(self: @ContractState, domain: Span<felt252>) -> ContractAddress {
-            assert(domain.len() == 1, 'domain must have a length of 1');
-            self._name_owners.read(*domain.at(0))
-        }
 
         fn is_registration_open(self: @ContractState) -> bool {
             self._is_registration_open.read()
