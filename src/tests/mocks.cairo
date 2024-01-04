@@ -1,2 +1,2 @@
-mod proxy_wallet;
+mod wallets;
 

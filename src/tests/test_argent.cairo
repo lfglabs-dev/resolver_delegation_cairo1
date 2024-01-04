@@ -13,8 +13,11 @@ use resolver_delegation::argent::{
 
 use naming::interface::resolver::{IResolver, IResolverDispatcher, IResolverDispatcherTrait};
 
-use super::mocks::proxy_wallet::{
-    ProxyWallet, IProxyWallet, IProxyWalletDispatcher, IProxyWalletDispatcherTrait,
+use super::mocks::wallets::{
+    ArgentWallet, IArgentWallet, IArgentWalletDispatcher, IArgentWalletDispatcherTrait,
+};
+use super::mocks::wallets::{
+    BraavosWallet, IBraavosWallet, IBraavosWalletDispatcher, IBraavosWalletDispatcherTrait,
 };
 use super::constants::{
     ENCODED_NAME, OTHER_NAME, OWNER, USER, ZERO, OTHER, WL_CLASS_HASH, OTHER_WL_CLASS_HASH,
@@ -34,9 +37,14 @@ fn setup() -> (IResolverDispatcher, IArgentResolverDelegationDispatcher) {
     )
 }
 
-fn deploy_proxy_wallet() -> IProxyWalletDispatcher {
-    let address = utils::deploy(ProxyWallet::TEST_CLASS_HASH, ArrayTrait::<felt252>::new());
-    IProxyWalletDispatcher { contract_address: address }
+fn deploy_braavos_wallet() -> IBraavosWalletDispatcher {
+    let address = utils::deploy(BraavosWallet::TEST_CLASS_HASH, ArrayTrait::<felt252>::new());
+    IBraavosWalletDispatcher { contract_address: address }
+}
+
+fn deploy_argent_wallet() -> IArgentWalletDispatcher {
+    let address = utils::deploy(ArgentWallet::TEST_CLASS_HASH, ArrayTrait::<felt252>::new());
+    IArgentWalletDispatcher { contract_address: address }
 }
 
 fn assert_domain_to_address(
@@ -54,13 +62,12 @@ fn assert_domain_to_address(
 #[available_gas(200000000)]
 fn test_claim_transfer_name() {
     let (resolver, argent_part) = setup();
-    let account = deploy_proxy_wallet();
-    let other_account = deploy_proxy_wallet();
+    let account = deploy_argent_wallet();
+    let other_account = deploy_argent_wallet();
 
     // Open registration & set class hash whitelisted
     testing::set_contract_address(OWNER());
     argent_part.open_registration();
-    argent_part.set_wl_class_hash(WL_CLASS_HASH());
 
     testing::set_caller_address(account.contract_address);
     testing::set_contract_address(account.contract_address);
@@ -80,12 +87,11 @@ fn test_claim_transfer_name() {
 #[should_panic(expected: ('Name is less than 4 characters', 'ENTRYPOINT_FAILED',))]
 fn test_claim_not_allowed_name() {
     let (resolver, argent_part) = setup();
-    let account = deploy_proxy_wallet();
+    let account = deploy_argent_wallet();
 
     // Open registration & set class hash whitelisted
     testing::set_contract_address(OWNER());
     argent_part.open_registration();
-    argent_part.set_wl_class_hash(WL_CLASS_HASH());
 
     // Should revert because of names are less than 4 chars (with the encoded domain "ben").
     testing::set_contract_address(account.contract_address);
@@ -98,13 +104,12 @@ fn test_claim_not_allowed_name() {
 #[should_panic(expected: ('Name is already taken', 'ENTRYPOINT_FAILED',))]
 fn test_claim_taken_name_should_fail() {
     let (resolver, argent_part) = setup();
-    let account = deploy_proxy_wallet();
-    let other_account = deploy_proxy_wallet();
+    let account = deploy_argent_wallet();
+    let other_account = deploy_argent_wallet();
 
     // Open registration & set class hash whitelisted
     testing::set_contract_address(OWNER());
     argent_part.open_registration();
-    argent_part.set_wl_class_hash(WL_CLASS_HASH());
 
     // Should resolve to 123 because we'll register it (with the encoded domain "thomas").
     testing::set_contract_address(account.contract_address);
@@ -121,13 +126,12 @@ fn test_claim_taken_name_should_fail() {
 #[should_panic(expected: ('Caller is blacklisted', 'ENTRYPOINT_FAILED',))]
 fn test_claim_two_names_should_fail() {
     let (resolver, argent_part) = setup();
-    let account = deploy_proxy_wallet();
-    let other_account = deploy_proxy_wallet();
+    let account = deploy_argent_wallet();
+    let other_account = deploy_argent_wallet();
 
     // Open registration & set class hash whitelisted
     testing::set_contract_address(OWNER());
     argent_part.open_registration();
-    argent_part.set_wl_class_hash(WL_CLASS_HASH());
 
     // Should resolve to 123 because we'll register it (with the encoded domain "thomas").
     testing::set_contract_address(account.contract_address);
@@ -143,11 +147,10 @@ fn test_claim_two_names_should_fail() {
 #[should_panic(expected: ('Registration is closed', 'ENTRYPOINT_FAILED',))]
 fn test_open_registration() {
     let (resolver, argent_part) = setup();
-    let account = deploy_proxy_wallet();
+    let account = deploy_argent_wallet();
 
     // Open registration & set class hash whitelisted
     testing::set_contract_address(OWNER());
-    argent_part.set_wl_class_hash(WL_CLASS_HASH());
 
     // Should revert because the registration is closed (with the encoded domain "thomas").
     testing::set_contract_address(account.contract_address);
@@ -156,31 +159,14 @@ fn test_open_registration() {
 
 #[test]
 #[available_gas(200000000)]
-#[should_panic(expected: ('Owner is not an argent wallet', 'ENTRYPOINT_FAILED',))]
-fn test_implementation_class_hash_not_set() {
+#[should_panic(expected: ('ENTRYPOINT_NOT_FOUND', 'ENTRYPOINT_FAILED',))]
+fn test_wrong_wallet() {
     let (resolver, argent_part) = setup();
-    let account = deploy_proxy_wallet();
+    let account = deploy_braavos_wallet();
 
     // Open registration & set class hash whitelisted
     testing::set_contract_address(OWNER());
     argent_part.open_registration();
-
-    // Should revert because the implementation class hash is not set
-    testing::set_contract_address(account.contract_address);
-    argent_part.claim_name(ENCODED_NAME());
-}
-
-#[test]
-#[available_gas(200000000)]
-#[should_panic(expected: ('Owner is not an argent wallet', 'ENTRYPOINT_FAILED',))]
-fn test_implementation_class_hash_not_whitelisted() {
-    let (resolver, argent_part) = setup();
-    let account = deploy_proxy_wallet();
-
-    // Open registration & set class hash whitelisted
-    testing::set_contract_address(OWNER());
-    argent_part.open_registration();
-    argent_part.set_wl_class_hash(OTHER_WL_CLASS_HASH());
 
     // Should revert because the implementation class hash is not set
     testing::set_contract_address(account.contract_address);
@@ -211,7 +197,6 @@ fn test_change_implementation_class_hash_not_admin() {
     // Open registration & set class hash whitelisted
     testing::set_contract_address(OWNER());
     argent_part.open_registration();
-    argent_part.set_wl_class_hash(OTHER_WL_CLASS_HASH());
 
     // Should revert because the caller is not admin of the contract
     testing::set_contract_address(USER());
@@ -228,7 +213,6 @@ fn test_change_implementation_class_hash_0_failed() {
     // Open registration & set class hash whitelisted
     testing::set_contract_address(OWNER());
     argent_part.open_registration();
-    argent_part.set_wl_class_hash(OTHER_WL_CLASS_HASH());
 
     // Should revert because the implementation class hash cannot be zero
     argent_part.upgrade(CLASS_HASH_ZERO());

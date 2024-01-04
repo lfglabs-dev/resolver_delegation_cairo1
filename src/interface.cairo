@@ -1,4 +1,9 @@
 #[starknet::interface]
-trait IProxyWallet<TContractState> {
-    fn get_implementation(self: @TContractState) -> felt252;
+trait IArgentWallet<TContractState> {
+    fn get_name(self: @TContractState) -> felt252;
+}
+
+#[starknet::interface]
+trait IBraavosWallet<TContractState> {
+    fn get_impl_version(self: @TContractState) -> felt252;
 }

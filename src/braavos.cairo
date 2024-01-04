@@ -21,7 +21,7 @@ mod BraavosResolverDelegation {
     use starknet::{get_caller_address, ContractAddress};
     use starknet::class_hash::ClassHash;
 
-    use resolver_delegation::interface::{IProxyWalletDispatcher, IProxyWalletDispatcherTrait};
+    use resolver_delegation::interface::{IBraavosWalletDispatcher, IBraavosWalletDispatcherTrait};
     use resolver_delegation::utils::_get_amount_of_chars;
     use naming::interface::resolver::IResolver;
     use debug::PrintTrait;
@@ -112,10 +112,7 @@ mod BraavosResolverDelegation {
 
             // Check if caller is a braavos wallet
             let caller = get_caller_address();
-            let caller_class_hash = IProxyWalletDispatcher { contract_address: caller }
-                .get_implementation();
-            let is_class_hash_wl = self._is_class_hash_wl.read(caller_class_hash);
-            assert(is_class_hash_wl, 'Caller is not a braavos wallet');
+            self._check_braavos_account(caller);
 
             // Check if name is not taken
             let owner = self._name_owners.read(name);
@@ -147,10 +144,8 @@ mod BraavosResolverDelegation {
             assert(is_open, 'Registration is closed');
 
             // Check if receiver is a braavos wallet
-            let caller_class_hash = IProxyWalletDispatcher { contract_address: address }
-                .get_implementation();
-            let is_class_hash_wl = self._is_class_hash_wl.read(caller_class_hash);
-            assert(is_class_hash_wl, 'Receiver not a braavos wallet');
+            let caller = get_caller_address();
+            self._check_braavos_account(caller);
 
             // Check if name is not taken
             let owner = self._name_owners.read(name);
@@ -182,10 +177,8 @@ mod BraavosResolverDelegation {
             assert(owner == caller, 'caller is not owner');
 
             // Check if new owner is a braavos wallet
-            let caller_class_hash = IProxyWalletDispatcher { contract_address: new_owner }
-                .get_implementation();
-            let is_class_hash_wl = self._is_class_hash_wl.read(caller_class_hash);
-            assert(is_class_hash_wl, 'new_owner not a braavos wallet');
+            let caller = get_caller_address();
+            self._check_braavos_account(caller);
 
             // Change address in storage
             self._name_owners.write(name, new_owner);
@@ -221,6 +214,11 @@ mod BraavosResolverDelegation {
             let caller = get_caller_address();
             let admin = self._admin_address.read();
             assert(caller == admin, 'caller is not admin');
+        }
+
+        fn _check_braavos_account(self: @ContractState, owner: ContractAddress) {
+            // would panic because entrypoint doesn't exist on other wallets
+            IBraavosWalletDispatcher { contract_address: owner }.get_impl_version();
         }
     }
 }
