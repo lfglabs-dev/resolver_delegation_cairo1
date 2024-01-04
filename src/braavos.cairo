@@ -24,6 +24,8 @@ mod BraavosResolverDelegation {
     use resolver_delegation::interface::{IProxyWalletDispatcher, IProxyWalletDispatcherTrait};
     use resolver_delegation::utils::_get_amount_of_chars;
     use naming::interface::resolver::IResolver;
+    use debug::PrintTrait;
+
 
     #[storage]
     struct Storage {
