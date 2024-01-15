@@ -2,14 +2,12 @@
 trait IBraavosResolverDelegation<TContractState> {
     fn open_registration(ref self: TContractState);
     fn close_registration(ref self: TContractState);
-    fn set_wl_class_hash(ref self: TContractState, new_class_hash: felt252);
     fn set_admin(ref self: TContractState, new_admin: starknet::ContractAddress);
     fn upgrade(ref self: TContractState, impl_hash: starknet::class_hash::ClassHash);
     fn claim_name(ref self: TContractState, name: felt252);
     fn claim_name_for(ref self: TContractState, name: felt252, address: starknet::ContractAddress);
     fn transfer_name(ref self: TContractState, name: felt252, new_owner: starknet::ContractAddress);
     fn is_registration_open(self: @TContractState) -> bool;
-    fn is_class_hash_wl(self: @TContractState, class_hash: felt252) -> bool;
 }
 
 #[starknet::contract]
@@ -32,7 +30,6 @@ mod BraavosResolverDelegation {
         _name_owners: LegacyMap::<felt252, ContractAddress>,
         _is_registration_open: bool,
         _blacklisted_addresses: LegacyMap::<ContractAddress, bool>,
-        _is_class_hash_wl: LegacyMap::<felt252, bool>,
         _admin_address: ContractAddress,
     }
 
@@ -83,11 +80,6 @@ mod BraavosResolverDelegation {
         fn close_registration(ref self: ContractState) {
             self._check_admin();
             self._is_registration_open.write(false);
-        }
-
-        fn set_wl_class_hash(ref self: ContractState, new_class_hash: felt252) {
-            self._check_admin();
-            self._is_class_hash_wl.write(new_class_hash, true);
         }
 
         fn set_admin(ref self: ContractState, new_admin: ContractAddress) {
@@ -197,10 +189,6 @@ mod BraavosResolverDelegation {
 
         fn is_registration_open(self: @ContractState) -> bool {
             self._is_registration_open.read()
-        }
-
-        fn is_class_hash_wl(self: @ContractState, class_hash: felt252) -> bool {
-            self._is_class_hash_wl.read(class_hash)
         }
     }
 
