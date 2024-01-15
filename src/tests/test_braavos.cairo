@@ -66,7 +66,6 @@ fn test_claim_transfer_name() {
     // Open registration & set class hash whitelisted
     testing::set_contract_address(OWNER());
     contract_part.open_registration();
-    contract_part.set_wl_class_hash(WL_CLASS_HASH());
 
     testing::set_caller_address(account.contract_address);
     testing::set_contract_address(account.contract_address);
@@ -91,7 +90,6 @@ fn test_claim_not_allowed_name() {
     // Open registration & set class hash whitelisted
     testing::set_contract_address(OWNER());
     contract_part.open_registration();
-    contract_part.set_wl_class_hash(WL_CLASS_HASH());
 
     // Should revert because of names are less than 4 chars (with the encoded domain "ben").
     testing::set_contract_address(account.contract_address);
@@ -110,7 +108,6 @@ fn test_claim_taken_name_should_fail() {
     // Open registration & set class hash whitelisted
     testing::set_contract_address(OWNER());
     contract_part.open_registration();
-    contract_part.set_wl_class_hash(WL_CLASS_HASH());
 
     // Should resolve to 123 because we'll register it (with the encoded domain "thomas").
     testing::set_contract_address(account.contract_address);
@@ -133,7 +130,6 @@ fn test_claim_two_names_should_fail() {
     // Open registration & set class hash whitelisted
     testing::set_contract_address(OWNER());
     contract_part.open_registration();
-    contract_part.set_wl_class_hash(WL_CLASS_HASH());
 
     // Should resolve to 123 because we'll register it (with the encoded domain "thomas").
     testing::set_contract_address(account.contract_address);
@@ -153,7 +149,6 @@ fn test_open_registration() {
 
     // Open registration & set class hash whitelisted
     testing::set_contract_address(OWNER());
-    contract_part.set_wl_class_hash(WL_CLASS_HASH());
 
     // Should revert because the registration is closed (with the encoded domain "thomas").
     testing::set_contract_address(account.contract_address);
@@ -185,7 +180,6 @@ fn test_wrong_wallet() {
 //     // Open registration & set class hash whitelisted
 //     testing::set_contract_address(OWNER());
 //     contract_part.open_registration();
-//     contract_part.set_wl_class_hash(OTHER_WL_CLASS_HASH());
 
 //     // Should change implementation class hash
 //     contract_part.upgrade(NEW_CLASS_HASH());
@@ -200,7 +194,6 @@ fn test_change_implementation_class_hash_not_admin() {
     // Open registration & set class hash whitelisted
     testing::set_contract_address(OWNER());
     contract_part.open_registration();
-    contract_part.set_wl_class_hash(OTHER_WL_CLASS_HASH());
 
     // Should revert because the caller is not admin of the contract
     testing::set_contract_address(USER());
@@ -217,7 +210,6 @@ fn test_change_implementation_class_hash_0_failed() {
     // Open registration & set class hash whitelisted
     testing::set_contract_address(OWNER());
     contract_part.open_registration();
-    contract_part.set_wl_class_hash(OTHER_WL_CLASS_HASH());
 
     // Should revert because the implementation class hash cannot be zero
     contract_part.upgrade(CLASS_HASH_ZERO());

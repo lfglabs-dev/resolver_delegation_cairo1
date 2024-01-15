@@ -182,7 +182,6 @@ fn test_wrong_wallet() {
 //     // Open registration & set class hash whitelisted
 //     testing::set_contract_address(OWNER());
 //     argent_part.open_registration();
-//     argent_part.set_wl_class_hash(OTHER_WL_CLASS_HASH());
 
 //     // Should change implementation class hash
 //     argent_part.upgrade(NEW_CLASS_HASH());
