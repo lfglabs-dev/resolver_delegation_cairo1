@@ -5,7 +5,8 @@ trait IArgentWallet<TContractState> {
 
 #[starknet::interface]
 trait IBraavosWallet<TContractState> {
-    fn get_impl_version(self: @TContractState) -> felt252;
+    // it's actually more structured but we won't check it
+    fn get_signers(self: @TContractState) -> felt252;
 }
 
 
@@ -33,7 +34,7 @@ mod BraavosWallet {
 
     #[external(v0)]
     impl IBraavosWalletImpl of IBraavosWallet<ContractState> {
-        fn get_impl_version(self: @ContractState) -> felt252 {
+        fn get_signers(self: @ContractState) -> felt252 {
             '000.000.011'
         }
     }

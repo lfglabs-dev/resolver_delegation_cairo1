@@ -5,5 +5,5 @@ trait IArgentWallet<TContractState> {
 
 #[starknet::interface]
 trait IBraavosWallet<TContractState> {
-    fn get_impl_version(self: @TContractState) -> felt252;
+    fn get_signers(self: @TContractState) -> felt252;
 }

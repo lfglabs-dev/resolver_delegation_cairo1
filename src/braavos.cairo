@@ -12,7 +12,9 @@ trait IBraavosResolverDelegation<TContractState> {
 
 #[starknet::contract]
 mod BraavosResolverDelegation {
+    use core::result::ResultTrait;
     use core::traits::Into;
+    use starknet::call_contract_syscall;
     use array::SpanTrait;
     use zeroable::Zeroable;
 
@@ -205,8 +207,15 @@ mod BraavosResolverDelegation {
         }
 
         fn _check_braavos_account(self: @ContractState, owner: ContractAddress) {
-            // would panic because entrypoint doesn't exist on other wallets
-            IBraavosWalletDispatcher { contract_address: owner }.get_impl_version();
+            // Try to call get_signers entrypoint
+            let result = call_contract_syscall(
+                owner,
+                0x02b8faca80de28f81027b46c4f3cb534c44616e721ae9f1e96539c6b54a1d932,
+                array![].span()
+            );
+            if result.is_err() {
+                panic_with_felt252('Not a Braavos wallet');
+            };
         }
     }
 }

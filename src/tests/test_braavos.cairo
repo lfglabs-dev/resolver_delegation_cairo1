@@ -157,7 +157,7 @@ fn test_open_registration() {
 
 #[test]
 #[available_gas(200000000)]
-#[should_panic(expected: ('ENTRYPOINT_NOT_FOUND', 'ENTRYPOINT_FAILED',))]
+#[should_panic(expected: ('Not a Braavos wallet', 'ENTRYPOINT_FAILED',))]
 fn test_wrong_wallet() {
     let (braavos_resolver, contract_part) = setup();
     let account = deploy_argent_wallet();
