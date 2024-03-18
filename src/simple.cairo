@@ -16,6 +16,19 @@ mod SimpleResolverDelegation {
         name_owners: LegacyMap::<felt252, ContractAddress>,
     }
 
+    #[event]
+    #[derive(Drop, starknet::Event)]
+    enum Event {
+        DomainToAddressUpdate: DomainToAddressUpdate,
+    }
+
+    #[derive(Drop, starknet::Event)]
+    struct DomainToAddressUpdate {
+        #[key]
+        domain: Span<felt252>,
+        address: ContractAddress,
+    }
+
     #[external(v0)]
     impl AdditionResolveImpl of IResolver<ContractState> {
         fn resolve(
@@ -32,7 +45,14 @@ mod SimpleResolverDelegation {
         fn claim_name(ref self: ContractState, name: felt252) {
             let owner = self.name_owners.read(name);
             assert(owner == ContractAddressZeroable::zero(), 'Name is already taken');
-            self.name_owners.write(name, get_caller_address());
+            let caller = get_caller_address();
+            self.name_owners.write(name, caller);
+            self
+                .emit(
+                    Event::DomainToAddressUpdate(
+                        DomainToAddressUpdate { domain: array![name].span(), address: caller, }
+                    )
+                )
         }
 
         fn transfer_name(ref self: ContractState, name: felt252, new_owner: ContractAddress) {
