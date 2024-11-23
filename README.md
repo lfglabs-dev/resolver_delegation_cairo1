@@ -38,3 +38,12 @@ casm-add-pythonic-hints = true
 ```
 
 Build contracts with `scarb --release build` command.
+
+## Deployment Scripts
+The [`scripts`](https://github.com/lfglabs-dev/resolver_delegation_cairo1/tree/main/scripts) folder contains deployment scripts that streamline the process of deploying resolver contracts to Starknet. These scripts provide a consistent and efficient way to:
+
+- Manage contract declarations and class hash generation
+- Support deployment of different resolver types (Argent, Braavos)
+- Handle deployment across different networks. Example: [testnet](https://github.com/lfglabs-dev/resolver_delegation_cairo1/blob/main/scripts/deploy-argent/deploy_testnet.py) or [mainnet](https://github.com/lfglabs-dev/resolver_delegation_cairo1/blob/main/scripts/deploy-argent/deploy_mainnet.py)
+
+To use the deployment scripts, navigate to the [scripts](https://github.com/lfglabs-dev/resolver_delegation_cairo1/tree/main/scripts) directory. This automated approach helps reduce deployment errors and saves time compared to manual deployment.
