@@ -15,6 +15,10 @@ mod ArgentResolverDelegation {
     use zeroable::Zeroable;
     use starknet::class_hash::ClassHash;
 
+    use starknet::storage::{
+        StoragePointerReadAccess, StoragePointerWriteAccess, StoragePathEntry, Map
+    };
+
     use starknet::get_caller_address;
     use starknet::contract_address_const;
     use starknet::ContractAddress;
@@ -25,9 +29,9 @@ mod ArgentResolverDelegation {
 
     #[storage]
     struct Storage {
-        _name_owners: LegacyMap::<felt252, ContractAddress>,
+        _name_owners: Map::<felt252, ContractAddress>,
         _is_registration_open: bool,
-        _blacklisted_addresses: LegacyMap::<ContractAddress, bool>,
+        _blacklisted_addresses: Map::<ContractAddress, bool>,
         _admin_address: ContractAddress,
     }
 
@@ -53,7 +57,7 @@ mod ArgentResolverDelegation {
         self._admin_address.write(admin);
     }
 
-    #[external(v0)]
+    #[abi(embed_v0)]
     impl AdditionResolveImpl of IResolver<ContractState> {
         fn resolve(
             self: @ContractState, mut domain: Span<felt252>, field: felt252, hint: Span<felt252>
@@ -64,7 +68,7 @@ mod ArgentResolverDelegation {
         }
     }
 
-    #[external(v0)]
+    #[abi(embed_v0)]
     impl ArgentResolverDelegationImpl of super::IArgentResolverDelegation<ContractState> {
         //
         // Admin functions

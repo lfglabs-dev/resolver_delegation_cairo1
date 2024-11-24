@@ -18,6 +18,10 @@ mod BraavosResolverDelegation {
     use array::SpanTrait;
     use zeroable::Zeroable;
 
+    use starknet::storage::{
+        StoragePointerReadAccess, StoragePointerWriteAccess, StoragePathEntry, Map
+    };
+
     use starknet::{get_caller_address, ContractAddress};
     use starknet::class_hash::ClassHash;
 
@@ -29,9 +33,9 @@ mod BraavosResolverDelegation {
 
     #[storage]
     struct Storage {
-        _name_owners: LegacyMap::<felt252, ContractAddress>,
+        _name_owners: Map::<felt252, ContractAddress>,
         _is_registration_open: bool,
-        _blacklisted_addresses: LegacyMap::<ContractAddress, bool>,
+        _blacklisted_addresses: Map::<ContractAddress, bool>,
         _admin_address: ContractAddress,
     }
 
@@ -58,7 +62,7 @@ mod BraavosResolverDelegation {
     }
 
 
-    #[external(v0)]
+    #[abi(embed_v0)]
     impl AdditionResolveImpl of IResolver<ContractState> {
         fn resolve(
             self: @ContractState, mut domain: Span<felt252>, field: felt252, hint: Span<felt252>
@@ -69,7 +73,7 @@ mod BraavosResolverDelegation {
         }
     }
 
-    #[external(v0)]
+    #[abi(embed_v0)]
     impl BraavosResolverDelegationImpl of super::IBraavosResolverDelegation<ContractState> {
         //
         // Admin functions
