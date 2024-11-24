@@ -7,13 +7,16 @@ trait ISimpleResolverDelegation<TContractState> {
 #[starknet::contract]
 mod SimpleResolverDelegation {
     use array::SpanTrait;
+    use starknet::storage::{
+        StoragePointerReadAccess, StoragePointerWriteAccess, StoragePathEntry, Map
+    };
     use starknet::{get_caller_address, ContractAddress};
     use starknet::contract_address::ContractAddressZeroable;
     use naming::interface::resolver::IResolver;
 
     #[storage]
     struct Storage {
-        name_owners: LegacyMap::<felt252, ContractAddress>,
+        name_owners: Map::<felt252, ContractAddress>,
     }
 
     #[event]
@@ -29,7 +32,7 @@ mod SimpleResolverDelegation {
         address: ContractAddress,
     }
 
-    #[external(v0)]
+    #[abi(embed_v0)]
     impl AdditionResolveImpl of IResolver<ContractState> {
         fn resolve(
             self: @ContractState, mut domain: Span<felt252>, field: felt252, hint: Span<felt252>
@@ -40,7 +43,7 @@ mod SimpleResolverDelegation {
         }
     }
 
-    #[external(v0)]
+    #[abi(embed_v0)]
     impl SimpleResolverDelegationImpl of super::ISimpleResolverDelegation<ContractState> {
         fn claim_name(ref self: ContractState, name: felt252) {
             let owner = self.name_owners.read(name);
