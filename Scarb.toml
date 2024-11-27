@@ -3,7 +3,7 @@ name = "resolver_delegation"
 version = "0.1.0"
 
 [dependencies]
-starknet = ">=2.3.1"
+starknet = "2.4.0"
 naming = { git = "https://github.com/starknet-id/naming.git", rev = "dbfa14263bae1865be49476a88f9381648fd88fe" }
 
 [[target.starknet-contract]]
