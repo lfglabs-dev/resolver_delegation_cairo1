@@ -3,8 +3,8 @@ name = "resolver_delegation"
 version = "0.1.0"
 
 [dependencies]
-starknet = "2.4.0"
-naming = { git = "https://github.com/starknet-id/naming.git", rev = "dbfa14263bae1865be49476a88f9381648fd88fe" }
+starknet = "2.6.3"
+naming = { git = "https://github.com/starknet-id/naming.git", rev = "7fa861a7a6e56c96ba3b508c66d7587d2597385a" }
 
 [[target.starknet-contract]]
 sierra = true
